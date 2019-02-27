@@ -10,9 +10,9 @@ Random crop around box for given image and box position.
 
 img : array-like, image array (with shape hight x weith x channel)
 
-start : int $(y,x)$, left-up position of bounding box
+start : int (y,x), left-up position of bounding box
 
-end : int $(y,x)$, right-down position of bounding box
+end : int (y,x), right-down position of bounding box
 
 n_crop : number of output croped image
 
