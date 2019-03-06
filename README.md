@@ -65,3 +65,15 @@ max_try : int>0, maxmun times of retry if each random result is excluded(see avo
 List of crop_img
 
 crop_img : array-like, croped image with same channal as input img
+
+### img_to_torch(numpy_img)
+
+convert numpy array(0~255) to torch tensor in float32(-1.~+1.), 
+
+#### Parameters:
+
+numpy_img: uint8 numpy array with shape (n_datum, side_x, side_y, n_channel)
+
+#### Returns:
+
+torch_input : float torch tensor with dim (n_datum, n_channel, side_x, side_y)

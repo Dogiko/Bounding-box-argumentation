@@ -94,4 +94,4 @@ def random_crop_square_nothing(img, starts, ends, n_crop=1, resize=-1, avoid_rat
     return output
 
 def img_to_torch(numpy_img):
-    return torch.tensor(np.transpose(numpy_img.astype(np.float64), (0,3,1,2))/127.5 - 1)
+    return torch.tensor(np.transpose(numpy_img.astype(np.float32), (0,3,1,2))/127.5 - 1)
