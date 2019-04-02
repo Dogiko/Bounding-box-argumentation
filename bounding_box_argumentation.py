@@ -27,7 +27,7 @@ def random_crop_square(img, start, end, n_crop=1, resize=-1, box_in_crop_ratio=[
     box_center = np.array([start[0]+end[0], start[1]+end[1]])/2
     half_weith = int((end[0]-start[0]+1)/2)
     half_hight = int((end[1]-start[1]+1)/2)
-    extend = 2*max(half_weith, half_hight)
+    extend = 4*max(half_weith, half_hight)
     img = ext_black(img, extend)
     box_center += extend
     crop_ratio = np.random.rand(n_crop)*(box_in_crop_ratio[1]-box_in_crop_ratio[0])+box_in_crop_ratio[0]
@@ -41,6 +41,46 @@ def random_crop_square(img, start, end, n_crop=1, resize=-1, box_in_crop_ratio=[
                    )
         if resize>0:
             crop_img = cv2.resize(crop_img, (resize, resize)) 
+        
+        crop_box_center = box_center - crop_center + crop_half_length[c]
+        crop_start = crop_box_center - np.array([half_weith, half_hight])
+        crop_end = crop_box_center + np.array([half_weith, half_hight])
+        crop_box_center /= 2*crop_half_length[c]
+        crop_half_weith = half_weith/(2*crop_half_length[c])
+        crop_half_hight = half_hight/(2*crop_half_length[c])
+        
+        if flip:
+            if np.random.rand()>0.5:
+                crop_img = cv2.flip(crop_img, 1)
+                crop_box_center[0] = 1- crop_box_center[0]
+        
+        output.append([crop_img, crop_box_center, crop_half_weith, crop_half_hight])
+    
+    return output
+
+def random_crop_square_full_box(img, start, end, n_crop=1, resize=-1, box_in_crop_ratio=2., flip=False):
+    cheak_type(resize, int)
+    cheak_type(n_crop, int)
+    cheak_interval(box_in_crop_ratio, mini=1)
+    
+    output = []
+    box_center = np.array([start[0]+end[0], start[1]+end[1]])/2
+    half_weith = int((end[0]-start[0]+1)/2)
+    half_hight = int((end[1]-start[1]+1)/2)
+    extend = int(2*box_in_crop_ratio*max(half_weith, half_hight))+1
+    img = ext_black(img, extend)
+    box_center += extend
+    crop_ratio = np.random.rand(n_crop)*(box_in_crop_ratio-1)+1
+    crop_half_length = crop_ratio*max(half_weith, half_hight)
+    for c in range(n_crop):
+        crop_center = box_center + (2*np.random.rand(2)-1)*max(half_weith, half_hight)*(crop_ratio[c]-1)
+        crop_img = (crop_square(img,
+                                (crop_center-crop_half_length[c]).astype(np.int),
+                                int(2*crop_half_length[c])
+                               )
+                   )
+        if resize>0:
+                crop_img = cv2.resize(crop_img, (resize, resize)) 
         
         crop_box_center = box_center - crop_center + crop_half_length[c]
         crop_start = crop_box_center - np.array([half_weith, half_hight])
@@ -86,7 +126,6 @@ def random_crop_square_nothing(img, starts, ends, n_crop=1, resize=-1, avoid_rat
                 if flip:
                     if np.random.rand()>0.5:
                         crop_img = cv2.flip(crop_img, 1)
-                        crop_box_center[0] = 1- crop_box_center[0]
                 
                 output.append(crop_img)
                 break
