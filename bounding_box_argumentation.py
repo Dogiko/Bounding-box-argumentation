@@ -134,3 +134,34 @@ def random_crop_square_nothing(img, starts, ends, n_crop=1, resize=-1, avoid_rat
 
 def img_to_torch(numpy_img):
     return torch.tensor(np.transpose(numpy_img.astype(np.float32), (0,3,1,2))/127.5 - 1)
+
+def ssd_like_argumentation(img, start, end, resize=-1, flip=False):
+    start = np.array([50, 30])
+    end = np.array([230, 150])
+    box_center = (start + end)/2
+    width, hight = tuple(np.array(end) - np.array(start))
+    d_box_log2_woh = np.array([2,1,0,-1,-2])
+    d_box = np.zeros((len(d_box_log2_woh), 2))
+    d_box[:,0] = 2**(d_box_log2_woh/2)
+    d_box[:,1] = 2**(-d_box_log2_woh/2)
+    d_box /= 2**(0.5)
+    used_d_box = (np.abs(np.log2(width/hight) - d_box_log2_woh)) < 0.6
+    crop_length = int(np.sqrt(width*hight*(2**(np.random.rand()*2))))
+    crop_bias = (np.random.rand(2)*1-0.5)/8
+    ext_image = ext_black(img, int(2*max(width, hight)))
+    crop_start = (box_center+int(2*max(width, hight)) - crop_length*(1/2 + crop_bias)).astype(int)
+    crop_img = crop_square(ext_image, crop_start, crop_length)
+    if resize>0:
+        crop_img = cv2.resize(crop_img, (resize, resize)) 
+            
+    relate_bias = crop_bias/d_box
+    relate_wh = (np.array([width, hight])/crop_length)/d_box
+    relate_log_wh = np.log(relate_wh)
+    if flip:
+        if np.random.rand()>0.5:
+            crop_img = cv2.flip(crop_img, 1)
+            relate_bias[:, 0] *= -1
+    
+    argumentation = np.concatenate([used_d_box.reshape(-1,1).astype(float), relate_bias, relate_wh], axis=1)
+    
+    return crop_img, argumentation.reshape(-1)
