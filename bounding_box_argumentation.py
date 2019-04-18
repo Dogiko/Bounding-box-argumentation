@@ -136,8 +136,6 @@ def img_to_torch(numpy_img):
     return torch.tensor(np.transpose(numpy_img.astype(np.float32), (0,3,1,2))/127.5 - 1)
 
 def ssd_like_argumentation(img, start, end, resize=-1, flip=False):
-    start = np.array([50, 30])
-    end = np.array([230, 150])
     box_center = (start + end)/2
     width, hight = tuple(np.array(end) - np.array(start))
     d_box_log2_woh = np.array([2,1,0,-1,-2])
